@@ -1,3 +1,10 @@
+import numpy as np
+import tflearn
+from tflearn.layers.core import input_data, dropout, fully_connected
+from tflearn.layers.estimator import regression
+from statistics import median, mean
+from collections import Counter
+
 class BasePokerPlayer(object):
   """Base Poker client implementation
 
@@ -11,8 +18,11 @@ class BasePokerPlayer(object):
   - receive_game_update_message
   - receive_round_result_message
   """
+  train_data = []
 
   def __init__(self):
+    self.r_value = []
+    self.score = []
     pass
 
   def declare_action(self, valid_actions, hole_card, round_state):
@@ -35,9 +45,13 @@ class BasePokerPlayer(object):
     err_msg = self.__build_err_msg("receive_game_update_message")
     raise NotImplementedError(err_msg)
 
-  def receive_round_result_message(self, winners, hand_info, round_state):
+  def receive_round_result_message(self, winners, hand_info, round_state, hole_card):
     err_msg = self.__build_err_msg("receive_round_result_message")
+    # print (self.pass_r_value(hole_card, round_state))
     raise NotImplementedError(err_msg)
+
+  def pass_r_value(self, hole_card, round_state):
+    return 0
 
   def set_uuid(self, uuid):
     self.uuid = uuid
@@ -45,6 +59,11 @@ class BasePokerPlayer(object):
   def respond_to_ask(self, message):
     """Called from Dealer when ask message received from RoundManager"""
     valid_actions, hole_card, round_state = self.__parse_ask_message(message)
+    rval = self.pass_r_value(hole_card, round_state)
+    action = self.declare_action(valid_actions, hole_card, round_state)
+    print(rval)
+    self.r_value.append([rval, action])
+    print(self.r_value)
     return self.declare_action(valid_actions, hole_card, round_state)
 
   def receive_notification(self, message):
@@ -105,5 +124,14 @@ class BasePokerPlayer(object):
     winners = message["winners"]
     hand_info = message["hand_info"]
     round_state = message["round_state"]
+    end_score = winners[0]['stack'] - 10000
+    if (end_score >= -30):
+      file = open("testfile.txt", "a")
+      for list in self.r_value:
+        file.write(" ")
+        file.write('%.3f' % list[0])
+        file.write(" ")
+        file.write(list[1])
+        print(list)
     return winners, hand_info, round_state
 

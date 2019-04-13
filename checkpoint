@@ -1,0 +1,2 @@
+model_checkpoint_path: "/home/ky/Desktop/mypoker-master/mymodel.tfl"
+all_model_checkpoint_paths: "/home/ky/Desktop/mypoker-master/mymodel.tfl"
